@@ -55,7 +55,6 @@ const isConfigured = () => GOOGLE_APPS_SCRIPT_URL && !GOOGLE_APPS_SCRIPT_URL.sta
 const rupiah = (n) => "Rp " + Math.round(n).toLocaleString("id-ID");
 const pad = (n) => String(n).padStart(2, "0");
 const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
-const monthOffset = (o) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + o); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 const parseRupiah = (s) => Number(String(s).replace(/\D/g, "")) || 0; // "Rp 50.000" -> 50000
 const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Isi <select> dengan daftar pilihan (dipakai untuk nama & filter riwayat)
@@ -205,29 +204,6 @@ async function loadTransactions() {
   }
 }
 
-/* ---------- Dashboard ---------- */
-function dashMonth() {
-  const m = $("dashMode").value;
-  return m === "current" ? monthOffset(0) : m === "previous" ? monthOffset(-1) : $("dashMonth").value;
-}
-function renderDashboard() {
-  const month = dashMonth();
-  const list = transactions.filter((t) => !month || String(t.date).slice(0, 7) === month);
-  const sum = (type) => list.filter((t) => t.type === type).reduce((a, t) => a + Number(t.amount), 0);
-  const inc = sum("Income"), exp = sum("Expense");
-  $("sumIncome").textContent = rupiah(inc);
-  $("sumExpense").textContent = rupiah(exp);
-  $("sumBalance").textContent = rupiah(inc - exp);
-  $("sumCount").textContent = list.length;
-
-  const byCat = {};
-  list.filter((t) => t.type === "Expense").forEach((t) => (byCat[t.category] = (byCat[t.category] || 0) + Number(t.amount)));
-  const rows = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  $("catBars").innerHTML = rows.length
-    ? rows.map(([c, v]) => `<div class="bar-row"><span>${escapeHtml(c)}</span><div class="bar-track"><div class="bar-fill" style="width:${(v / rows[0][1]) * 100}%"></div></div><b>${rupiah(v)}</b></div>`).join("")
-    : `<p class="empty">Belum ada pengeluaran di periode ini.</p>`;
-}
-
 /* ---------- Riwayat transaksi ---------- */
 function renderCategoryFilter() {
   const type = $("qType").value;
@@ -246,7 +222,7 @@ function renderHistory() {
     ? list.map((t) => `<tr><td>${escapeHtml(t.date)}</td><td class="t-${escapeHtml(t.type)}">${escapeHtml(t.type)}</td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.subcategory)}</td><td class="num t-${escapeHtml(t.type)}">${t.type === "Expense" ? "−" : "+"}${rupiah(t.amount)}</td><td>${escapeHtml(t.paymentMethod)}</td><td>${escapeHtml(t.note)}</td></tr>`).join("")
     : `<tr><td colspan="7" class="empty">Tidak ada transaksi yang cocok.</td></tr>`;
 }
-const renderAll = () => { renderDashboard(); renderHistory(); renderRecent(); };
+const renderAll = () => { renderHistory(); renderRecent(); };
 
 /* ---------- Inisialisasi ---------- */
 function init() {
@@ -268,13 +244,6 @@ function init() {
   document.querySelectorAll("[data-add]").forEach((b) => b.addEventListener("click", () => { $("fAmount").value = rupiah(parseRupiah($("fAmount").value) + Number(b.dataset.add)); }));
   document.querySelectorAll("[data-day]").forEach((b) => b.addEventListener("click", () => setDay(Number(b.dataset.day))));
   $("txForm").addEventListener("submit", submitTransaction);
-
-  $("dashMode").addEventListener("change", () => {
-    $("dashMonth").hidden = $("dashMode").value !== "specific";
-    if (!$("dashMonth").hidden && !$("dashMonth").value) $("dashMonth").value = monthOffset(0);
-    renderDashboard();
-  });
-  $("dashMonth").addEventListener("change", renderDashboard);
 
   $("qType").addEventListener("change", () => { renderCategoryFilter(); renderHistory(); });
   ["qSearch", "qCategory", "qMonth"].forEach((id) => $(id).addEventListener("input", renderHistory));

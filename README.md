@@ -59,7 +59,6 @@ dengan URL `/exec` tadi. Untuk uji lokal, jalankan `python3 -m http.server` di f
 
 ## Cara memakai
 - **Add Transaction**: pilih tipe → kategori → subkategori otomatis menyesuaikan. Jumlah ditulis seperti `50000` dan otomatis menjadi `Rp 50.000`; yang disimpan ke Sheets adalah angka murni.
-- **Dashboard**: pilih Bulan ini / Bulan lalu / bulan tertentu.
 - **Transactions**: cari dan filter berdasarkan tipe, kategori, dan bulan.
 - **Settings**: tes koneksi dan muat ulang data dari Sheets.
 
@@ -72,3 +71,9 @@ dengan URL `/exec` tadi. Untuk uji lokal, jalankan `python3 -m http.server` di f
 ## Troubleshooting
 - **"Unexpected token '<' ... is not valid JSON"**: Web App mengembalikan halaman HTML (biasanya halaman login Google). Buka **Deploy → Manage deployments → Edit (ikon pensil)**, pastikan *Who has access* = **Anyone**, pilih **New version**, lalu **Deploy**. Pakai URL `/exec` (bukan `/dev`).
 - Uji cepat: buka `URL_ANDA?action=list&user=ADELIO%20AZKA` di tab baru. Hasil yang benar berupa teks JSON `{"success":true,...}`.
+
+## Membuat dashboard di Looker Studio
+Website ini hanya untuk **input data**. Dashboard dibuat siswa sendiri di [Looker Studio](https://lookerstudio.google.com):
+1. **Create → Report → Google Sheets**, pilih spreadsheet lalu tab **nama masing-masing**.
+2. Pastikan kolom `Date` bertipe *Date* dan `Amount` bertipe *Number* (Currency → IDR).
+3. Ide latihan: scorecard total Income/Expense, bar chart per `Category`, time series per `Date`, filter `Payment Method`.

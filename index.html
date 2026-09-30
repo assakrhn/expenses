@@ -15,33 +15,12 @@
     <select id="userSelect" aria-label="Nama pengguna"></select>
     <nav class="nav" aria-label="Navigasi utama">
       <button data-view="add" class="active"><span>✍️</span>Catat</button>
-      <button data-view="dashboard"><span>📊</span>Dashboard</button>
       <button data-view="transactions"><span>🧾</span>Riwayat</button>
       <button data-view="settings"><span>⚙️</span>Setelan</button>
     </nav>
   </header>
 
   <main>
-    <!-- DASHBOARD -->
-    <section id="view-dashboard" class="view">
-      <div class="toolbar">
-        <select id="dashMode" aria-label="Periode">
-          <option value="current">Bulan ini</option>
-          <option value="previous">Bulan lalu</option>
-          <option value="specific">Pilih bulan…</option>
-        </select>
-        <input type="month" id="dashMonth" hidden aria-label="Pilih bulan">
-      </div>
-      <div class="cards">
-        <article class="card income"><small>Total Income</small><strong id="sumIncome">Rp 0</strong></article>
-        <article class="card expense"><small>Total Expense</small><strong id="sumExpense">Rp 0</strong></article>
-        <article class="card balance"><small>Balance</small><strong id="sumBalance">Rp 0</strong></article>
-        <article class="card"><small>Transaksi</small><strong id="sumCount">0</strong></article>
-      </div>
-      <h2>Pengeluaran per kategori</h2>
-      <div id="catBars" class="panel"></div>
-    </section>
-
     <!-- INPUT (halaman utama) -->
     <section id="view-add" class="view active">
       <p id="greet" class="greet"></p>
