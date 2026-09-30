@@ -3,7 +3,7 @@
    ===================================================== */
 
 // >>> KONFIGURASI: tempel URL Web App Apps Script Anda di sini <<<
-const GOOGLE_APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL";
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzH-gohmi2-HO9yhXBFdiR8yhm6PWDtCg4Vtwa_Wi77Dwm0WsjlaJipjfjMjmLUY3Q/exec";
 
 /* ---------- Data kategori ---------- */
 const CATEGORIES = {
