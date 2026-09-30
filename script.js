@@ -58,6 +58,11 @@ const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(
 const monthOffset = (o) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + o); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 const parseRupiah = (s) => Number(String(s).replace(/\D/g, "")) || 0; // "Rp 50.000" -> 50000
 const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Isi <select> dengan daftar pilihan (dipakai untuk nama & filter riwayat)
+const fillSelect = (sel, items, placeholder) => {
+  sel.innerHTML = (placeholder ? `<option value="">${placeholder}</option>` : "") +
+    items.map((i) => `<option value="${escapeHtml(i)}">${escapeHtml(i)}</option>`).join("");
+};
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2));
 
 let transactions = [];
