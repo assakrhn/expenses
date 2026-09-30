@@ -68,3 +68,7 @@ dengan URL `/exec` tadi. Untuk uji lokal, jalankan `python3 -m http.server` di f
 - Buka **Extensions → Apps Script** dari spreadsheet hasil import itu, tempel `apps-script/Code.gs` versi terbaru, lalu deploy (langkah 3 di atas).
 - Di website, pilih nama di bagian atas halaman. Data dikirim dan dibaca hanya dari tab milik nama tersebut. Pilihan nama diingat di browser masing-masing.
 - Menambah orang baru: tambahkan nama di `USERS` pada `script.js` dan `Code.gs`, lalu deploy versi baru. Tab dibuat otomatis saat transaksi pertama.
+
+## Troubleshooting
+- **"Unexpected token '<' ... is not valid JSON"**: Web App mengembalikan halaman HTML (biasanya halaman login Google). Buka **Deploy → Manage deployments → Edit (ikon pensil)**, pastikan *Who has access* = **Anyone**, pilih **New version**, lalu **Deploy**. Pakai URL `/exec` (bukan `/dev`).
+- Uji cepat: buka `URL_ANDA?action=list&user=ADELIO%20AZKA` di tab baru. Hasil yang benar berupa teks JSON `{"success":true,...}`.

@@ -77,3 +77,28 @@ td.num { font-variant-numeric: tabular-nums; font-weight: 600; }
 /* Pemilih nama */
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
 #userSelect { width: auto; max-width: 100%; min-height: 36px; font-weight: 600; }
+
+/* ===== Halaman input ===== */
+#view-add { max-width: 560px; margin: 0 auto; }
+.greet { font-weight: 800; font-size: 1.15rem; margin: 1.1rem 0 .7rem; }
+.entry { display: grid; gap: .55rem; }
+.entry h3 { font-size: .75rem; color: var(--muted); margin: .7rem 0 0; text-transform: uppercase; letter-spacing: .05em; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
+.seg button { border: 0; background: none; color: var(--muted); font-weight: 800; padding: .7rem; border-radius: 9px; cursor: pointer; min-height: 44px; }
+.seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.amount-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: .8rem 1rem; }
+.amount-box label { color: var(--muted); }
+.amount-box input { border: 0; font-size: 2rem; font-weight: 800; padding: 0; min-height: 0; color: var(--expense); background: transparent; }
+.amount-box input:focus-visible { outline: none; }
+.entry[data-type="Income"] .amount-box input { color: var(--income); }
+.chips, .row { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.chip, .mini { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: .5rem .9rem; font-weight: 600; cursor: pointer; min-height: 40px; }
+.chip.on { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.mini { padding: .35rem .75rem; min-height: 34px; font-size: .85rem; color: var(--muted); }
+.row input { flex: 1 1 150px; width: auto; }
+button.big { font-size: 1.05rem; padding: 1rem; margin-top: .6rem; position: sticky; bottom: 80px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+@media (min-width: 720px) { button.big { position: static; } }
+.today { color: var(--muted); font-weight: 600; margin: 0 0 .5rem; }
+.recent { list-style: none; padding: 0; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.recent li { display: flex; justify-content: space-between; gap: .6rem; padding: .65rem .9rem; border-bottom: 1px solid var(--line); }
+.recent li:last-child { border: 0; } .recent small { display: block; color: var(--muted); }

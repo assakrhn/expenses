@@ -14,16 +14,16 @@
     <h1>💰 My Financial Tracker</h1>
     <select id="userSelect" aria-label="Nama pengguna"></select>
     <nav class="nav" aria-label="Navigasi utama">
-      <button data-view="dashboard" class="active"><span>📊</span>Dashboard</button>
-      <button data-view="add"><span>➕</span>Add Transaction</button>
-      <button data-view="transactions"><span>🧾</span>Transactions</button>
-      <button data-view="settings"><span>⚙️</span>Settings</button>
+      <button data-view="add" class="active"><span>✍️</span>Catat</button>
+      <button data-view="dashboard"><span>📊</span>Dashboard</button>
+      <button data-view="transactions"><span>🧾</span>Riwayat</button>
+      <button data-view="settings"><span>⚙️</span>Setelan</button>
     </nav>
   </header>
 
   <main>
     <!-- DASHBOARD -->
-    <section id="view-dashboard" class="view active">
+    <section id="view-dashboard" class="view">
       <div class="toolbar">
         <select id="dashMode" aria-label="Periode">
           <option value="current">Bulan ini</option>
@@ -42,25 +42,45 @@
       <div id="catBars" class="panel"></div>
     </section>
 
-    <!-- ADD TRANSACTION -->
-    <section id="view-add" class="view">
-      <h2>Tambah transaksi</h2>
-      <form id="txForm" class="panel form" novalidate>
-        <label>Tanggal <input type="date" id="fDate" required></label>
-        <label>Tipe
-          <select id="fType" required>
-            <option value="Expense">Expense</option>
-            <option value="Income">Income</option>
-          </select>
-        </label>
-        <label>Kategori <select id="fCategory" required></select></label>
-        <label>Subkategori <select id="fSub"></select></label>
-        <label>Jumlah <input type="text" id="fAmount" inputmode="numeric" placeholder="Rp 50.000" autocomplete="off" required></label>
-        <label>Metode pembayaran <select id="fPay" required></select></label>
-        <label class="wide">Catatan <input type="text" id="fNote" maxlength="200" placeholder="Opsional"></label>
+    <!-- INPUT (halaman utama) -->
+    <section id="view-add" class="view active">
+      <p id="greet" class="greet"></p>
+      <form id="txForm" class="entry" data-type="Expense" novalidate>
+        <input type="hidden" id="fType" value="Expense">
+        <input type="hidden" id="fCategory">
+        <input type="hidden" id="fSub">
+        <input type="hidden" id="fPay">
+        <div class="seg" id="typeSeg">
+          <button type="button" data-type="Expense" class="on">💸 Pengeluaran</button>
+          <button type="button" data-type="Income">💵 Pemasukan</button>
+        </div>
+        <div class="amount-box">
+          <label for="fAmount">Berapa?</label>
+          <input type="text" id="fAmount" inputmode="numeric" placeholder="Rp 0" autocomplete="off">
+        </div>
+        <div class="row">
+          <button type="button" class="mini" data-add="5000">+5rb</button>
+          <button type="button" class="mini" data-add="10000">+10rb</button>
+          <button type="button" class="mini" data-add="20000">+20rb</button>
+          <button type="button" class="mini" data-add="50000">+50rb</button>
+          <button type="button" class="mini" data-add="100000">+100rb</button>
+        </div>
+        <h3>Kategori</h3><div class="chips" id="catChips"></div>
+        <div id="subWrap" hidden><h3>Detail</h3><div class="chips" id="subChips"></div></div>
+        <h3>Bayar pakai</h3><div class="chips" id="payChips"></div>
+        <h3>Tanggal</h3>
+        <div class="row">
+          <input type="date" id="fDate" aria-label="Tanggal">
+          <button type="button" class="mini" data-day="0">Hari ini</button>
+          <button type="button" class="mini" data-day="-1">Kemarin</button>
+        </div>
+        <input type="text" id="fNote" maxlength="200" placeholder="Catatan (opsional)" aria-label="Catatan">
         <p id="formError" class="error" role="alert" hidden></p>
-        <button type="submit" id="btnSave" class="primary wide">Simpan transaksi</button>
+        <button type="submit" id="btnSave" class="primary big">Simpan</button>
       </form>
+      <h2>Catatan terakhir</h2>
+      <p id="todaySum" class="today"></p>
+      <ul id="recent" class="recent"></ul>
     </section>
 
     <!-- TRANSACTIONS -->

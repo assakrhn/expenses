@@ -80,24 +80,41 @@ function toast(msg, isError = false) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3500);
 }
 
-/* ---------- Form: dropdown dinamis ---------- */
-const fillSelect = (sel, items, placeholder) => {
-  sel.innerHTML = (placeholder ? `<option value="">${placeholder}</option>` : "") +
-    items.map((i) => `<option value="${escapeHtml(i)}">${escapeHtml(i)}</option>`).join("");
-};
-function updateCategories() {
-  fillSelect($("fCategory"), Object.keys(CATEGORIES[$("fType").value]), "Pilih kategori");
-  updateSubcategories();
+/* ---------- Form: chip interaktif (tap, tanpa dropdown) ---------- */
+const ICONS = { "Food": "🍜", "Transport": "🚌", "Entertainment": "🎬", "Buy Goods": "🛍️", "Bills": "🧾", "Personal": "🧴", "Travel": "✈️", "Giving": "🎁", "Saving / Investment": "🐖", "Cash": "💵", "E-wallet": "📱", "From Other People": "🤝", "Bank": "🏦", "Credit Card": "💳" };
+const val = (id) => $(id).value;
+function renderChips(box, items, current, onPick) {
+  box.innerHTML = items.map((i) => `<button type="button" class="chip${i === current ? " on" : ""}" data-v="${escapeHtml(i)}">${ICONS[i] ? ICONS[i] + " " : ""}${escapeHtml(i)}</button>`).join("");
+  box.querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => onPick(b.dataset.v)));
 }
-function updateSubcategories() {
-  const subs = CATEGORIES[$("fType").value][$("fCategory").value] || [];
-  fillSelect($("fSub"), subs, subs.length ? "Pilih subkategori" : "— tidak ada —");
-  $("fSub").disabled = !subs.length;
+function setType(t) {
+  $("fType").value = t; $("txForm").dataset.type = t;
+  document.querySelectorAll("#typeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.type === t));
+  setCategory("");
+}
+function setCategory(c) {
+  $("fCategory").value = c;
+  renderChips($("catChips"), Object.keys(CATEGORIES[val("fType")]), c, setCategory);
+  const subs = CATEGORIES[val("fType")][c] || [];
+  $("subWrap").hidden = !subs.length;
+  setSub("", subs);
+}
+function setSub(s, subs) {
+  $("fSub").value = s;
+  renderChips($("subChips"), subs, s, (v) => setSub(v, subs));
+}
+function setPay(p) {
+  $("fPay").value = p;
+  renderChips($("payChips"), PAYMENT_METHODS, p, setPay);
+  try { localStorage.setItem("ft_pay", p); } catch (e) {} // ingat metode terakhir
+}
+function setDay(offset) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  $("fDate").value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 function resetForm() {
-  $("txForm").reset();
-  $("fDate").value = todayStr();
-  updateCategories();
+  $("fAmount").value = ""; $("fNote").value = ""; setDay(0);
+  setType(val("fType") || "Expense"); // tipe & metode bayar dipertahankan agar input berikutnya cepat
   pendingId = null;
 }
 
@@ -106,6 +123,24 @@ $("fAmount").addEventListener("input", (e) => {
   const n = parseRupiah(e.target.value);
   e.target.value = n ? rupiah(n) : "";
 });
+
+/* Sapaan + ringkasan hari ini + 5 catatan terakhir */
+function renderRecent() {
+  $("greet").textContent = currentUser ? `Halo, ${currentUser.split(" ")[0]}! 👋 Catat dalam 10 detik.` : "Pilih namamu di pojok atas dulu ya 👆";
+  const today = todayStr();
+  const spent = transactions.filter((t) => t.date === today && t.type === "Expense").reduce((a, t) => a + Number(t.amount), 0);
+  $("todaySum").textContent = `Pengeluaran hari ini: ${rupiah(spent)}`;
+  const last = [...transactions].sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp))).slice(0, 5);
+  $("recent").innerHTML = last.length
+    ? last.map((t) => `<li><span>${ICONS[t.category] || ""} ${escapeHtml(t.category)}${t.subcategory ? " · " + escapeHtml(t.subcategory) : ""}<small>${escapeHtml(t.date)}${t.note ? " · " + escapeHtml(t.note) : ""}</small></span><b class="t-${escapeHtml(t.type)}">${t.type === "Expense" ? "−" : "+"}${rupiah(t.amount)}</b></li>`).join("")
+    : `<li class="empty">Belum ada catatan. Yuk catat yang pertama! 🚀</li>`;
+}
+
+async function fetchJson(url, opts) {
+  const text = await (await fetch(url, opts)).text();
+  try { return JSON.parse(text); }
+  catch (e) { throw new Error("Server mengirim halaman HTML, bukan data. Cek deployment Apps Script: akses harus 'Anyone' dan sudah di-deploy ulang (New version)."); }
+}
 
 /* ---------- Kirim transaksi ---------- */
 function validate(tx) {
@@ -136,11 +171,10 @@ async function submitTransaction(e) {
   submitting = true; $("btnSave").disabled = true; $("btnSave").textContent = "Menyimpan…";
   try {
     // text/plain menghindari preflight CORS yang tidak didukung Apps Script
-    const res = await fetch(GOOGLE_APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(tx) });
-    const data = await res.json();
+    const data = await fetchJson(GOOGLE_APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(tx) });
     if (!data.success) throw new Error(data.error || "Server menolak data.");
     transactions.push(tx);
-    toast("Transaksi berhasil disimpan ✓");
+    toast("Tersimpan ✓ Mantap, tetap konsisten!");
     resetForm(); renderAll();
   } catch (ex) {
     toast("Gagal menyimpan: " + ex.message + ". Coba lagi (tidak akan dobel).", true);
@@ -155,8 +189,7 @@ async function loadTransactions() {
   if (!currentUser) { $("connStatus").textContent = "Pilih nama dulu"; return; }
   $("connStatus").textContent = "Memuat…";
   try {
-    const res = await fetch(GOOGLE_APPS_SCRIPT_URL + "?action=list&user=" + encodeURIComponent(currentUser));
-    const data = await res.json();
+    const data = await fetchJson(GOOGLE_APPS_SCRIPT_URL + "?action=list&user=" + encodeURIComponent(currentUser));
     if (!data.success) throw new Error(data.error);
     transactions = data.transactions;
     $("connStatus").textContent = `Terhubung (${transactions.length} transaksi)`;
@@ -208,12 +241,14 @@ function renderHistory() {
     ? list.map((t) => `<tr><td>${escapeHtml(t.date)}</td><td class="t-${escapeHtml(t.type)}">${escapeHtml(t.type)}</td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.subcategory)}</td><td class="num t-${escapeHtml(t.type)}">${t.type === "Expense" ? "−" : "+"}${rupiah(t.amount)}</td><td>${escapeHtml(t.paymentMethod)}</td><td>${escapeHtml(t.note)}</td></tr>`).join("")
     : `<tr><td colspan="7" class="empty">Tidak ada transaksi yang cocok.</td></tr>`;
 }
-const renderAll = () => { renderDashboard(); renderHistory(); };
+const renderAll = () => { renderDashboard(); renderHistory(); renderRecent(); };
 
 /* ---------- Inisialisasi ---------- */
 function init() {
   document.querySelectorAll(".nav button").forEach((b) => b.addEventListener("click", () => showView(b.dataset.view)));
-  fillSelect($("fPay"), PAYMENT_METHODS, "Pilih metode");
+  let savedPay = "Cash";
+  try { savedPay = localStorage.getItem("ft_pay") || "Cash"; } catch (e) {}
+  setPay(PAYMENT_METHODS.includes(savedPay) ? savedPay : "Cash");
   fillSelect($("userSelect"), USERS, "Pilih nama…");
   $("userSelect").value = currentUser;
   $("userSelect").addEventListener("change", () => {
@@ -224,8 +259,9 @@ function init() {
   resetForm();
   renderCategoryFilter();
 
-  $("fType").addEventListener("change", updateCategories);
-  $("fCategory").addEventListener("change", updateSubcategories);
+  document.querySelectorAll("#typeSeg button").forEach((b) => b.addEventListener("click", () => setType(b.dataset.type)));
+  document.querySelectorAll("[data-add]").forEach((b) => b.addEventListener("click", () => { $("fAmount").value = rupiah(parseRupiah($("fAmount").value) + Number(b.dataset.add)); }));
+  document.querySelectorAll("[data-day]").forEach((b) => b.addEventListener("click", () => setDay(Number(b.dataset.day))));
   $("txForm").addEventListener("submit", submitTransaction);
 
   $("dashMode").addEventListener("change", () => {
